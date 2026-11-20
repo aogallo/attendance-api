@@ -18,7 +18,7 @@ The Organization Administrator allows a customer to operate its own attendance p
 
 ## Scope
 
-From the first delivery, Organization Administrator access requires email/password authentication plus a TOTP second factor from an authenticator application. The API must reject password-only access to organization-level administrative operations. Invitation acceptance does not waive MFA, and password recovery does not bypass it. If the authenticator is lost, recovery is manual with identity verification and enrollment/verification of a new TOTP factor before administrative access is restored. An authorized recovery invalidates the affected account's previous authentication factors and existing sessions. Only a Platform Administrator may authorize that recovery; an Organization Administrator cannot authorize their own or another administrator's recovery. Detailed evidence, technical enforcement of factor/session invalidation, and enrollment controls remain to be designed. Recovery does not grant access to another organization or platform-wide operations.
+Organization administrative access follows the [current administrative access policy](../security/administrative-access.md), including its MFA and manual recovery boundaries. The role cannot authorize its own or another administrator's recovery. Recovery does not grant access to another organization or platform-wide operations; detailed controls remain at the policy owner.
 
 The role is limited to the organization it administers. It is responsible for creating the initial and any additional establishments, and an establishment must exist before a person can enroll. It must not administer another organization or platform-wide settings.
 

@@ -6,6 +6,11 @@ This documentation describes the business meaning, decisions, and principal use 
 
 - [Product Decisions](product-decisions.md) — source of truth for established decisions and unresolved product questions.
 - [Principal Attendance Flow](use-cases/principal-flow.md) — end-to-end flow from organization setup to attendance review.
+- [Administrative Access Policy](security/administrative-access.md) — current confirmed authentication, MFA, recovery, password, and session rules.
+- [Email Delivery Policy](operations/email-delivery.md) — current sender/language, capacity observations, and failure handling.
+- [Technical Decision Index](technical-decisions/README.md) — accepted choices and rationale; existing TD records serve as ADRs.
+- [Onboarding Specification](../specs/organization-onboarding/spec.md) — proposed living feature behavior and acceptance criteria; approval is still pending.
+- [Documentation Workflow](agent-workflow.md) — rule ownership, optional tooling, and plan closeout/archive lifecycle.
 
 ## Core concepts
 
