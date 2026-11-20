@@ -1,6 +1,8 @@
 # Organization Onboarding — Intent
 
-**Status:** Draft intent for clarification. This is not yet an implementation specification.
+**Status:** Original intent and clarification context, not a separate living rulebook or an implementation specification.
+
+The confirmed behavior is now consolidated in the [proposed behavior specification](spec.md), with a [proposed implementation and test plan](implementation-plan.md). Both await owner review; they do not authorize application implementation or remote configuration. This intent remains original context, not an independent copy to update. For current confirmed requirements, follow [product decisions](../../docs/product-decisions.md), [administrative access policy](../../docs/security/administrative-access.md), and [email delivery policy](../../docs/operations/email-delivery.md). Older general pending-work lists below do not reopen specifically approved policies. Once the spec is accepted, maintain feature behavior there; keep this context for rationale rather than copying new rules into it.
 
 ## Objective
 
