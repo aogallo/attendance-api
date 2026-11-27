@@ -2,6 +2,10 @@
 
 `internal/auth` verifies signed administrative credentials; it does **not** grant application authority or prove a session remains active. Administrative writes require both token verification and an externally supplied session verifier. P1 must keep writes unavailable until P2 supplies verified session enforcement.
 
+## Package layout
+
+Shared authentication interfaces, `Principal` and `JWTConfig` live in `types.go`; exported error sentinels live in `errors.go`; named verification limits live in `constants.go`. Cache and verifier implementation details remain in `jwt.go`. This is a package-local organization change: exported names, error identities, validation rules, deadlines, size limits and JWKS cache/backoff behavior are unchanged.
+
 ## Integration seam
 
 ```go
