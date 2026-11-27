@@ -15,37 +15,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var (
-	ErrUnauthenticated = errors.New("unauthenticated")
-	ErrMFARequired     = errors.New("MFA required")
-	ErrUnavailable     = errors.New("authentication unavailable")
-)
-
-// Principal deliberately contains neither email nor application roles.
-type Principal struct {
-	Issuer    string
-	Subject   string
-	SessionID string
-}
-
-type TokenVerifier interface {
-	Verify(context.Context, string) (Principal, error)
-}
-
-// SessionVerifier must enforce revocation, inactivity and absolute session limits.
-type SessionVerifier interface {
-	Verify(context.Context, Principal) error
-}
-
-// JWTConfig contains operator-controlled trust anchors, never request values.
-// Audience must be "authenticated". Algorithms may contain ES256, RS256 or EdDSA.
-type JWTConfig struct {
-	Issuer     string
-	JWKSURL    string
-	Audience   string
-	Algorithms []string
-}
-
 // JWTVerifier uses a bounded, lazy JWKS cache. Cancel its constructor context
 // on shutdown. There are no background refresh goroutines or startup requests.
 type JWTVerifier struct {
@@ -75,7 +44,7 @@ func newJWTVerifier(ctx context.Context, c JWTConfig, client *http.Client) (*JWT
 	}
 	c.Algorithms = slices.Clone(c.Algorithms)
 	bounded := *client
-	bounded.Timeout = 3 * time.Second
+	bounded.Timeout = verificationTimeout
 	bounded.CheckRedirect = func(*http.Request, []*http.Request) error {
 		return errors.New("JWKS redirects prohibited")
 	}
@@ -102,10 +71,10 @@ func (v *JWTVerifier) Verify(ctx context.Context, raw string) (Principal, error)
 	if ctx.Err() != nil || v.lifetime.Err() != nil {
 		return Principal{}, ErrUnavailable
 	}
-	if len(raw) == 0 || len(raw) > 16*1024 {
+	if len(raw) == 0 || len(raw) > maxTokenBytes {
 		return Principal{}, ErrUnauthenticated
 	}
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, verificationTimeout)
 	defer cancel()
 	stop := context.AfterFunc(v.lifetime, cancel)
 	defer stop()
@@ -161,11 +130,11 @@ func (v *JWTVerifier) keyset(ctx context.Context) (keyfunc.Keyfunc, error) {
 	}
 	keys, err := v.fetch(ctx)
 	if err != nil {
-		v.retryAfter = time.Now().Add(5 * time.Second)
+		v.retryAfter = time.Now().Add(jwksRetryBackoff)
 		return nil, ErrUnavailable
 	}
 	v.keys = keys
-	v.expires = time.Now().Add(5 * time.Minute)
+	v.expires = time.Now().Add(jwksCacheLifetime)
 	return keys, nil
 }
 
@@ -182,8 +151,8 @@ func (v *JWTVerifier) fetch(ctx context.Context) (keyfunc.Keyfunc, error) {
 	if response.StatusCode != http.StatusOK {
 		return nil, ErrUnavailable
 	}
-	body, err := io.ReadAll(io.LimitReader(response.Body, 1024*1024+1))
-	if err != nil || len(body) > 1024*1024 {
+	body, err := io.ReadAll(io.LimitReader(response.Body, maxJWKSBytes+1))
+	if err != nil || len(body) > maxJWKSBytes {
 		return nil, ErrUnavailable
 	}
 	return keyfunc.NewJWKSetJSON(body)
